@@ -4,6 +4,8 @@ struct ContentView: View {
   @EnvironmentObject var clipboard: Clipboard
   @EnvironmentObject var settingsWindow: SettingsWindow
   
+  @State var isPrivacyMode = SettingsManager.instance.privacyMode
+  
   private func textWrap(text: String) -> String {
     if text.count > SettingsManager.instance.previewCharsLimit {
       return String(text.prefix(SettingsManager.instance.previewCharsLimit)) + " ..."
@@ -12,12 +14,39 @@ struct ContentView: View {
     }
   }
   
+  private func maskText(text: String) -> String {
+    let half = text.count / 2
+    return String(text.prefix(half)) + String(repeating: "*", count: text.count - half)
+  }
+  
+  private func formatText(text: String) -> String {
+    let t = textWrap(text: text)
+    if isPrivacyMode {
+      return maskText(text: t)
+    } else {
+      return t
+    }
+  }
+  
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       HStack {
-        Text("Clipboard's content:")
+        Text("Clipboard's content")
           .frame(maxHeight: .infinity)
-          .padding(.horizontal)
+          .padding(.leading)
+        Divider()
+          .frame(maxHeight: 22)
+          .padding(.horizontal, 8)
+        Text("Privacy mode")
+        Toggle(isOn: Binding(
+          get: { isPrivacyMode },
+          set: { val in
+            SettingsManager.instance.privacyMode = val
+            isPrivacyMode = val
+          }
+        ), label: {})
+          .toggleStyle(.switch)
+          .scaleEffect(0.75)
         Spacer()
         Button(action: {
           settingsWindow.showWindow()
@@ -55,7 +84,7 @@ struct ContentView: View {
             
           ForEach(0..<clipboard.data.count, id: \.self) { index in
             HStack {
-              Text("\(textWrap(text: clipboard.data[index]))")
+              Text("\(formatText(text: clipboard.data[index]))")
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .offset(x: 20)
                 .padding(.vertical)

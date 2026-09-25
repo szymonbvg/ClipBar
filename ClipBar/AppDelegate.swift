@@ -22,7 +22,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let statusBar = NSStatusBar.system
     statusBarItem = statusBar.statusItem(withLength: NSStatusItem.variableLength)
     statusBarItem.button?.action = #selector(togglePopover(_:))
-    statusBarItem.button?.image = NSImage(named: "MenuBarIcon")
+    let icon = SettingsManager.instance.privacyMode ? "MenuBarIconPrivate" : "MenuBarIcon"
+    statusBarItem.button?.image = NSImage(named: icon)
+    
+    SettingsManager.instance.statusBarItemReference = statusBarItem
     
     clipboard.observePasteboard()
   }

@@ -4,6 +4,8 @@ import ServiceManagement
 class SettingsManager {
   static var instance = SettingsManager()
   
+  var statusBarItemReference: NSStatusItem?
+  
   var autoStartEnabled: Bool {
     didSet {
       UserDefaults.standard.set(autoStartEnabled, forKey: "autoStartEnabled")
@@ -14,6 +16,15 @@ class SettingsManager {
           try SMAppService.mainApp.unregister()
         }
       } catch {}
+    }
+  }
+  
+  var privacyMode: Bool {
+    didSet {
+      UserDefaults.standard.set(privacyMode, forKey: "privacyMode")
+      guard let statusBarItem = statusBarItemReference else { return }
+      let nsImageName = privacyMode ? "MenuBarIconPrivate" : "MenuBarIcon"
+      statusBarItem.button?.image = NSImage(named: nsImageName)
     }
   }
   
@@ -35,6 +46,7 @@ class SettingsManager {
   
   init() {
     autoStartEnabled = UserDefaults.standard.bool(forKey: "autoStartEnabled")
+    privacyMode = UserDefaults.standard.bool(forKey: "privacyMode")
     clipboardLimit = UserDefaults.standard.integer(forKey: "clipboardLimit")
     previewCharsLimit = UserDefaults.standard.integer(forKey: "previewCharsLimit")
     
